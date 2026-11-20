@@ -19,7 +19,7 @@ The editor must work both for someone starting an assignment without knowing LaT
 | Included in the first release | Not required in the first release |
 |---|---|
 | macOS application built with GPUI | Windows, Linux, web, or mobile clients |
-| Assignment, Paper, Thesis, and Letter templates | A template marketplace or visual template designer |
+| Assignment, Paper, Thesis, and Letter templates, plus University Article, University Report, and University Final Year Project | A template marketplace or visual template designer |
 | Opening and editing existing multi-file LaTeX projects | Recovering an editable project from a PDF |
 | Visual editing of prose, headings, basic formatting, lists, equations, and figures | Visual editing of every LaTeX package, macro, table, or diagram |
 | Cross-references, citations, and a bibliography menu | Online publication lookup or a general-purpose reference manager |
@@ -46,16 +46,19 @@ The same workflow must work in a thesis chapter without flattening the thesis in
 
 ### 4.1 New documents
 
-**File → New** offers four ready-to-write templates. The user selects a document purpose, not a LaTeX class.
+**File → New** offers seven ready-to-write templates: four general-purpose options and three university options from the repository. Show the university templates as separately selectable options, not replacements for the general-purpose templates. The chooser uses descriptive names and shows template-specific toolchain requirements; users do not need to know which `.cls` file to pick.
 
-| Template | Initial structure |
+| Template | Initial project |
 |---|---|
 | Assignment | Title and author fields, followed by a first problem or section |
 | Paper | Title, author, abstract, and a first section; ready to add citations |
 | Thesis | Root document, front matter, and at least one separately stored chapter |
 | Letter | Sender, recipient, date, salutation, body, and closing |
+| University Article | Generate a ready-to-edit `main.tex` with starter content and `\documentclass{uniarticle}`. Copy [`uniarticle.cls`](../templates/uniarticle.cls) into the project. |
+| University Report | Generate a ready-to-edit `main.tex` with starter content and `\documentclass{unireport}`. Copy [`unireport.cls`](../templates/unireport.cls) into the project. |
+| University Final Year Project (FYP) | Copy the [university FYP project](../templates/uni-fyp-template/) and open `main.tex` as the root. Preserve its `fict.cls`, front matter, chapters, appendices, assets, and `references.bib` with their relative paths intact. |
 
-Each template must compile with the documented baseline toolchain. A new project must contain only ordinary source and assets needed for that document. Creating one must not overwrite an existing project without confirmation.
+Each selection creates an independent project at the chosen destination. It must not edit the bundled originals, rely on files in the app bundle after creation, or overwrite an existing project without confirmation. Each project must compile outside the editor with its documented toolchain. Missing build dependencies must not block project creation, editing, or saving.
 
 ### 4.2 Existing projects
 
@@ -140,7 +143,7 @@ Provide a **Bibliography** menu:
 
 From a blank template, adding the first source must create or select a project-local `.bib` file and configure it so the cited work appears in the exported bibliography. If the document already has a bibliography setup, reuse it. Adding one entry must not reorder existing entries, rewrite unrelated fields, or switch bibliography systems.
 
-**Proposed compatibility baseline:** use one documented bibliography setup for the shipped templates. Recognize conventional BibTeX and `biblatex` projects. If the editor cannot safely modify a custom setup, allow source editing and explain what remains to be connected. Never add a competing preamble configuration merely to make the menu action succeed.
+**Proposed compatibility baseline:** use one documented bibliography setup where a template does not already supply one. The University Final Year Project must retain its existing `biblatex` setup and use its `references.bib`. Recognize conventional BibTeX and `biblatex` projects. If the editor cannot safely modify a custom setup, allow source editing and explain what remains to be connected. Never add a competing preamble configuration merely to make the menu action succeed.
 
 ### 6.5 Unsupported LaTeX
 
@@ -151,7 +154,7 @@ An unsupported construct is not necessarily invalid LaTeX. A custom command may 
 ## 7. Compilation, export, and diagnostics
 
 - Detect the locally installed toolchain and allow the user to select its location if discovery fails. Do not bundle TeX, automatically install packages, or require a network service.
-- Document a tested compiler and bibliography combination for the shipped templates. Respect a supported existing project configuration rather than silently changing engines.
+- Document a tested build setup for each shipped template, including the compiler and any required fonts, packages, and helper tools. Use a `fontspec`-compatible engine for University Article and University Report and document their Fira Sans and JetBrains Mono requirements. Use LuaLaTeX for University Final Year Project and support its existing bibliography and glossary build steps. Respect a supported existing project configuration rather than silently changing engines. The app must not automatically run template-supplied build scripts or enable shell escape to satisfy a dependency.
 - Build the selected root against a consistent snapshot of current edits, including unsaved chapter and bibliography changes. Preview must not force a save over the user’s working files.
 - Run compilation away from the UI thread. Allow cancellation. Resolve references and bibliography passes before reporting a successful final build; distinguish warnings such as unresolved citations from fatal errors.
 - Keep intermediate files out of the source tree by default. Export the PDF to a user-chosen destination only after a successful build. A failed export must not destroy an existing PDF.
@@ -187,7 +190,7 @@ Use source-backed anchors for carets and selections rather than page coordinates
 
 | ID | Test | Pass condition |
 |---|---|---|
-| A01 | Create each of the four templates on a Mac with the documented toolchain. | Each opens on an editable page and exports a valid PDF without manual source changes. |
+| A01 | Choose each of the seven templates from **File → New** on a Mac with its documented dependencies. | Each opens on an editable page and exports a valid PDF without manual source changes. Each university project uses the expected local class file; the FYP project retains its original file layout and resolves its figures, glossary, and bibliography. Editing a generated project leaves the bundled template unchanged. |
 | A02 | Open and save a multi-file fixture containing comments, macros, mixed formatting, and a `.bib` file. | A byte comparison finds no changes to project source or assets. |
 | A03 | Correct one typo visually in an included chapter. | The diff contains only that correction in that chapter file. |
 | A04 | Type across a page boundary while an earlier layout request finishes. Repeat during input-method composition. | No stale result moves the active passage, disrupts composition, or drops input. After idle reconciliation, the caret remains at the same logical text position. |
